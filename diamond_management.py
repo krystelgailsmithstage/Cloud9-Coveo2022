@@ -1,7 +1,7 @@
 from typing import List
 
-from game_message import Tick, Position, Team, TickMap, TileType, Unit, Diamond
-from game_command import CommandAction, CommandType
+from game_message import Unit, Diamond
+from game_command import CommandType
 
 
 def get_unowned_diamonds(diamonds: List[Diamond]):
@@ -17,7 +17,7 @@ def get_closest_diamond(unit: Unit, diamonds: List[Diamond]):
     shortest_distance = None
     closest_diamond = None
 
-    for diamond in diamonds:
+    for diamond in filter(None, diamonds):
         distance_x = abs(diamond.position.x - unit.position.x)
         distance_y = abs(diamond.position.y - unit.position.y)
         distance = distance_x + distance_y

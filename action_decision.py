@@ -68,23 +68,25 @@ def get_next_action(tick: Tick, unit, actions):
 
 def find_escape(tick, unit, my_team):
     closest_enemy_position = get_closest_enemy(tick, unit)
-    if abs(unit.position.x - closest_enemy_position.x) < abs(unit.position.y - closest_enemy_position.y):
-        # Move Horizontally
-        if unit.position.x - closest_enemy_position.x < 0:
-            # Move Left
-            position = Position(unit.position.x - 1, unit.position.y)
+    if closest_enemy_position is not None:
+        if abs(unit.position.x - closest_enemy_position.x) < abs(unit.position.y - closest_enemy_position.y):
+            # Move Horizontally
+            if unit.position.x - closest_enemy_position.x < 0:
+                # Move Left
+                position = Position(unit.position.x - 1, unit.position.y)
+            else:
+                # Move Right
+                position = Position(unit.position.x + 1, unit.position.y)
         else:
-            # Move Right
-            position = Position(unit.position.x + 1, unit.position.y)
-    else:
-        # Move Vertically
-        if unit.position.y - closest_enemy_position.y < 0:
-            # Move Up
-            position = Position(unit.position.x, unit.position.y - 1)
-        else:
-            # Move Down
-            position = Position(unit.position.x, unit.position.y + 1)
-    return position
+            # Move Vertically
+            if unit.position.y - closest_enemy_position.y < 0:
+                # Move Up
+                position = Position(unit.position.x, unit.position.y - 1)
+            else:
+                # Move Down
+                position = Position(unit.position.x, unit.position.y + 1)
+        return position
+    return unit.position
 
 
 def get_all_units_positions(tick: Tick):
@@ -120,31 +122,6 @@ def get_empty_tiles(position: Position, tick: Tick):
                 and pos not in get_all_units_positions(tick):
             empty_position.append(pos)
     return empty_position
-
-
-def get_closest_spawn(diamond, spawns):
-    closest_spawn = None
-    shortest_distance = None
-
-    for spawn in spawns:
-        distance_x = abs(diamond.position.x - spawn.x)
-        distance_y = abs(diamond.position.y - spawn.y)
-        distance = distance_x + distance_y
-        if shortest_distance is None or distance < shortest_distance:
-            shortest_distance = distance
-            closest_spawn = spawn
-
-    return closest_spawn, distance
-
-
-def get_diamond_spawn_pairs(diamonds, spawns):
-    pair = []
-    for diamond in diamonds:
-        pair.append(get_closest_spawn(diamond, spawns))
-
-    pair.sort(key=lambda x:x[1])
-
-    return pair
 
 
 def get_drop_action(unit: Unit, tick):

@@ -6,7 +6,7 @@ import websockets
 import json
 
 from typing import List
-from bot import Bot
+from bot import get_next_moves
 from bot_message import BotMessage, MessageType
 from game_message import Tick, Team
 
@@ -15,16 +15,15 @@ async def run():
     uri = "ws://127.0.0.1:8765"
 
     async with websockets.connect(uri) as websocket:
-        bot = Bot()
         if "TOKEN" in os.environ:
             await websocket.send(json.dumps({"type": "REGISTER", "token": os.environ["TOKEN"]}))
         else:
             await websocket.send(json.dumps({"type": "REGISTER", "teamName": "MyPythonicBot"}))
 
-        await game_loop(websocket=websocket, bot=bot)
+        await game_loop(websocket=websocket)
 
 
-async def game_loop(websocket: websockets.WebSocketServerProtocol, bot: Bot):
+async def game_loop(websocket: websockets.WebSocketServerProtocol):
     while True:
         try:
             message = await websocket.recv()
@@ -41,7 +40,7 @@ async def game_loop(websocket: websockets.WebSocketServerProtocol, bot: Bot):
         if my_team.errors:
             print(f"Bot command errors :  {' '.join(my_team.errors)}")
 
-        next_moves: List = bot.get_next_moves(game_message)
+        next_moves: List = get_next_moves(game_message)
         await websocket.send(BotMessage(type=MessageType.COMMAND, actions=next_moves, tick=game_message.tick).to_json())
 
 
