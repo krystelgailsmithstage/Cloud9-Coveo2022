@@ -41,12 +41,32 @@ def get_next_action(tick: Tick, unit, actions):
         if get_summon_level_for_unit(unit, tick.map) < 5:
             return CommandType.SUMMON, unit.position
         else:
-            return CommandType.NONE, None
+            return CommandType.MOVE, find_escape(tick, unit, my_team)
     elif tick.tick == tick.totalTick - 1 and unit.hasDiamond:
         return get_drop_action(unit, tick)
     else:
         return CommandType.NONE, None
-        # targeted_diamonds = get_targeted_diamonds(actions, tick.map.diamonds)
+
+def find_escape(tick, unit, my_team):
+    closest_enemy_position = get_closest_enemy_position(tick, unit, my_team)
+    if abs(unit.position.x - closest_enemy_position.x) < abs(unit.position.y - closest_enemy_position.y):
+        # Move Horizontally
+        if unit.position.x - closest_enemy_position.x < 0:
+            # Move Left
+            position = Position(unit.position.x - 1, unit.position.y)
+        else:
+            # Move Right
+            position = Position(unit.position.x + 1, unit.position.y)
+    else:
+        # Move Vertically
+        if unit.position.y - closest_enemy_position.y < 0:
+            # Move Up
+            position = Position(unit.position.x, unit.position.y - 1)
+        else:
+            # Move Down
+            position = Position(unit.position.x, unit.position.y + 1)
+    return position
+
     #
     # enemy_close, enemy_unit = is_enemy_close(unit, tick)
     #
