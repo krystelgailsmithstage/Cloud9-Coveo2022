@@ -1,3 +1,4 @@
+import copy
 from typing import List
 from game_message import Tick, Team
 from game_command import CommandAction, CommandType
@@ -14,10 +15,10 @@ def get_next_moves(tick: Tick, zones) -> List:
     it in the next turns.
     """
     my_team: Team = tick.get_teams_by_id()[tick.teamId]
-
     actions: List = []
     index = 0
     for unit in my_team.units:
+        tick_copy = copy.deepcopy(tick)
         if not unit.hasSpawned:
             actions.append(
                 CommandAction(
@@ -28,7 +29,7 @@ def get_next_moves(tick: Tick, zones) -> List:
             )
             index = index + 1
         else:
-            next_action, next_position = get_next_action(tick, unit, zones)
+            next_action, next_position = get_next_action(tick_copy, unit, zones)
             actions.append(
                 CommandAction(
                     action=next_action,
