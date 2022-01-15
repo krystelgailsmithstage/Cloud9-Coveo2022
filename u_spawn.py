@@ -1,5 +1,6 @@
 from typing import List
 from game_message import Position, TickMap, TileType
+import random
 
 
 def get_spawn_position(tick_map: TickMap, index) -> Position:
@@ -14,8 +15,10 @@ def get_spawn_position(tick_map: TickMap, index) -> Position:
     spawnsBorders = get_spawn_borders(spawns, tick_map)
     diamond_spawn_pairs = get_diamond_spawn_pairs(tick_map.diamonds, spawnsBorders)
 
-    return diamond_spawn_pairs[index][0]
+    if diamond_spawn_pairs[index][0] in spawnsBorders :
+        return diamond_spawn_pairs[index][0]
 
+    return spawnsBorders[random.randint(0, len(spawns) - 1)]
 
 def get_closest_spawn(diamond, spawns):
     closest_spawn = None
