@@ -67,8 +67,8 @@ def get_next_action(tick: Tick, unit, all_zones):
     command_type_to_return = CommandType.NONE
     position_to_return = None
 
-    if tick.map.get_tile_type_at(unit.position) == TileType.SPAWN:
-        print(f"UNIT {unit.id} is in spawn at ({unit.position.x}, {unit.position.y})")
+    # if tick.map.get_tile_type_at(unit.position) == TileType.SPAWN:
+    #     print(f"UNIT {unit.id} is in spawn at ({unit.position.x}, {unit.position.y})")
 
 
     # Make sure to drop the owned diamonds on the last tick at all times
@@ -130,7 +130,7 @@ def get_next_action(tick: Tick, unit, all_zones):
             diamond_lvl = get_summon_level_for_unit(unit, tick.map)
             # print(f"Unit {unit.id} ({unit.position.x}, {unit.position.y}) is verifying if it should summon")
             ticks_left = tick.totalTick - tick.tick
-            if distance > (3 + diamond_lvl) and diamond_lvl < 5 and ticks_left >= (diamond_lvl + 1):
+            if distance > (3 + diamond_lvl) and diamond_lvl < 5 and ticks_left > (diamond_lvl + 1):
                 return CommandType.SUMMON, unit.position
 
             # When enemy is too close, dop ton gun
@@ -140,9 +140,8 @@ def get_next_action(tick: Tick, unit, all_zones):
             # If the unit is too close from enemy units, move away
             else:
                 return CommandType.MOVE, escape_from_enemy_action(tick, unit)
-        # If the unit is too close from enemy units, move away
         else:
-            return CommandType.MOVE, escape_from_enemy_action(tick, unit)
+            return CommandType.SUMMON, unit.position
 
     # Return a None command for this unit to make sure the code does not crash
     else:
