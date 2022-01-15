@@ -1,6 +1,7 @@
 from typing import List
 from game_message import Tick, Position, Team, TickMap, TileType
 from game_command import CommandAction, CommandType
+from action_decision import get_next_action
 
 from spawn import get_spawn_borders
 
@@ -30,16 +31,13 @@ class Bot:
                     )
                 )
             else:
+                next_action, next_position = get_next_action(tick, unit, actions)
                 actions.append(
-                    CommandAction(action=CommandType.MOVE, unitId=unit.id, target=self.get_random_position(tick.map))
+                    CommandAction(action=next_action, unitId=unit.id, target=next_position)
                 )
 
         return actions
 
-    def get_random_position(self, tick_map: TickMap) -> Position:
-        return Position(
-            random.randint(0, tick_map.get_map_size_x() - 1), random.randint(0, tick_map.get_map_size_y() - 1)
-        )
 
     def get_random_spawn_position(self, tick_map: TickMap) -> Position:
         spawns: List[Position] = []
