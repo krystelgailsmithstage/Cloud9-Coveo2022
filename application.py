@@ -9,9 +9,10 @@ from typing import List
 from bot import get_next_moves
 from bot_message import BotMessage, MessageType
 from game_message import Tick, Team
-from zone import get_zones, print_zones
+from u_zone import get_zones, print_zones
 
 zones = []
+
 
 async def run():
     uri = "ws://127.0.0.1:8765"
@@ -46,7 +47,7 @@ async def game_loop(websocket: websockets.WebSocketServerProtocol):
         if my_team.errors:
             print(f"Bot command errors :  {' '.join(my_team.errors)}")
 
-        next_moves: List = get_next_moves(game_message)
+        next_moves: List = get_next_moves(game_message, zones)
         await websocket.send(BotMessage(type=MessageType.COMMAND, actions=next_moves, tick=game_message.tick).to_json())
 
 

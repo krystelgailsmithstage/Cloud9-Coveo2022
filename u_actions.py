@@ -2,9 +2,10 @@ from game_message import Tick, Position, Team, TickMap, TileType, Unit
 
 from u_diamond import *
 from u_position import *
+zones = []
 
 
-def get_next_action(tick: Tick, unit):
+def get_next_action(tick: Tick, unit, all_zones):
     """
     The big papa decision maker
 
@@ -13,9 +14,12 @@ def get_next_action(tick: Tick, unit):
 
     :return: The action to be taken for the given Unit
     """
+    global zones
+    zones = all_zones
     my_team: Team = tick.get_teams_by_id()[tick.teamId]
 
-    clear_unavailable_diamonds(tick, tick.map.diamonds)
+    clear_unavailable_diamonds(tick, tick.map.diamonds, unit)
+    filter_diamonds_in_same_zone(tick, unit)
 
     command_type_to_return = CommandType.NONE
     position_to_return = None
@@ -28,7 +32,6 @@ def get_next_action(tick: Tick, unit):
     # First major use case is if the diamond does not have a diamond
     if not unit.hasDiamond:
         ordered_diamonds = get_diamonds_by_priority(tick, unit)
-        unowned_diamonds = get_unowned_diamonds(tick.map.diamonds)
 
         for diamond in ordered_diamonds:
             # If diamond is owned by our team, test with the next diamond in the priority list
@@ -111,12 +114,18 @@ def get_next_action(tick: Tick, unit):
         return CommandType.NONE, None
 
 
-def clear_unavailable_diamonds(tick: Tick, diamonds: List[Diamond]):
+def clear_unavailable_diamonds(tick: Tick, diamonds: List[Diamond], unit):
     diamonds_copy = diamonds.copy()
     for di in diamonds_copy:
-        if not validate_position_availability(tick, di.position):
-            print(f"REMOVING diamond at position {di.position} from available diamonds!")
+        if not validate_position_availability(tick, di.position) and unit.diamondId != di.id:
+            print(f"REMOVING diamond at position {di.position} from available diamonds! {di.id}")
             diamonds.remove(di)
+
+
+def filter_diamonds_in_same_zone(tick: Tick, unit: Unit):
+
+    
+    return
 
 
 def escape_from_enemy_action(tick, unit):
@@ -204,6 +213,8 @@ def get_drop_action(unit: Unit, tick):
 
 
 def get_summon_level_for_unit(unit: Unit, tick_map: TickMap):
+    print(unit.diamondId)
+    print(tick_map.diamonds)
     for diamond in tick_map.diamonds:
         if diamond.id == unit.diamondId:
             return diamond.summonLevel

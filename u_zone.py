@@ -4,6 +4,7 @@ from game_command import CommandAction, CommandType
 
 import random
 
+
 def get_zones(tick_map: TickMap) -> List[Position]:
     zones: List[List[Position]] = []
     zones.append(get_zone(tick_map, Position(0,0)))
@@ -21,6 +22,7 @@ def get_zones(tick_map: TickMap) -> List[Position]:
                 if not positionInAZone:
                     zones.append(get_zone(tick_map, position))
     return zones
+
 
 def get_zone(tick_map: TickMap, start_position: Position) -> List[Position]:
     inZone: List[Position] = []
