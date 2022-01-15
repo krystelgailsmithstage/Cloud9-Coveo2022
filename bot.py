@@ -3,13 +3,15 @@ from game_message import Tick, Position, Team, TickMap, TileType
 from game_command import CommandAction, CommandType
 from action_decision import get_next_action
 
+from spawn import get_spawn_borders
+
 import random
 
 
 class Bot:
     def __init__(self):
         print("Initializing your super mega duper bot")
-        
+
     def get_next_moves(self, tick: Tick) -> List:
         """
         Here is where the magic happens, for now the moves are random. I bet you can do better ;)
@@ -46,4 +48,7 @@ class Bot:
                 if tick_map.get_tile_type_at(position) == TileType.SPAWN:
                     spawns.append(position)
 
-        return spawns[random.randint(0, len(spawns) - 1)]
+        spawnsBorders = get_spawn_borders(spawns, tick_map)
+
+
+        return spawnsBorders[random.randint(0, len(spawnsBorders) - 1)]

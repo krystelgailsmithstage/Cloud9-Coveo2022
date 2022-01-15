@@ -34,7 +34,7 @@ async def game_loop(websocket: websockets.WebSocketServerProtocol, bot: Bot):
             break
 
         game_message: Tick = Tick.from_dict(json.loads(message))
-        print(f"Playing tick {game_message.tick} of {game_message.totalTick}")
+        # print(f"Playing tick {game_message.tick} of {game_message.totalTick}")
 
         my_team: Team = game_message.get_teams_by_id()[game_message.teamId]
 
