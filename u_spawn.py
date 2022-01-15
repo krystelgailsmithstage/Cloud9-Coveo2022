@@ -13,7 +13,7 @@ def get_spawn_position(tick_map: TickMap, index) -> Position:
 
     spawnsBorders = get_spawn_borders(spawns, tick_map)
     diamond_spawn_pairs = get_diamond_spawn_pairs(tick_map.diamonds, spawnsBorders)
-    diamond_spawn_pairs.sort(key=lambda x: x[1])
+
     return diamond_spawn_pairs[index][0]
 
 
@@ -29,7 +29,12 @@ def get_closest_spawn(diamond, spawns):
             shortest_distance = distance
             closest_spawn = spawn
 
-    return closest_spawn, distance
+    if shortest_distance > 0:
+        weight = diamond.points / shortest_distance
+    else:
+        weight = diamond.points
+
+    return closest_spawn, weight
 
 
 def get_diamond_spawn_pairs(diamonds, spawns):
@@ -37,8 +42,7 @@ def get_diamond_spawn_pairs(diamonds, spawns):
     for diamond in diamonds:
         pair.append(get_closest_spawn(diamond, spawns))
 
-    pair.sort(key=lambda x: x[1])
-
+    pair.sort(key=lambda x: x[1], reverse=True)
     return pair
 
 
@@ -53,8 +57,8 @@ def get_spawn_borders(spawnPositions: List[Position], tick_map: TickMap) -> List
 
 
 def has_around(tick_map: TickMap, position: Position, tileType: TileType)  -> bool:
-    maxIndexX = tick_map.get_map_size_x() - 1;
-    maxIndexY = tick_map.get_map_size_y() - 1;
+    maxIndexX = tick_map.get_map_size_x() - 1
+    maxIndexY = tick_map.get_map_size_y() - 1
     if position.x - 1 >= 0:
         if tick_map.get_tile_type_at(Position(position.x - 1, position.y)) == tileType:
             return True
