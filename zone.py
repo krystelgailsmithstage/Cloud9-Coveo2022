@@ -20,8 +20,7 @@ def get_zones(tick_map: TickMap) -> List[Position]:
                         positionInAZone = True
                 if not positionInAZone:
                     zones.append(get_zone(tick_map, position))
-
-    print_zones(zones)
+    return zones
 
 def get_zone(tick_map: TickMap, start_position: Position) -> List[Position]:
     inZone: List[Position] = []
@@ -66,7 +65,7 @@ def is_around_in_my_zone(tick_map: TickMap, position: Position, inZone: List[Pos
 def print_zones(zones: List[List[Position]]):
     print('nb of zones', len(zones))
     for idx, zone in enumerate(zones):
-        print('zone #',idx,' ->>>>>> ', zone)
+        print('zone #',idx, 'len', len(zone) ,'->>>>>> ', zone)
 
 # zoneBorders : List[Position] = []
 #     for x in range(tick_map.get_map_size_x()):
