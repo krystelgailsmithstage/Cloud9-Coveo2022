@@ -179,7 +179,6 @@ def get_next_action(tick: Tick, unit, all_zones):
         return CommandType.NONE, None
 
 
-def clear_unavailable_diamonds(tick: Tick, diamonds: List[Diamond], unit):
 def try_vine(unit, tick, my_team):
     vine_array = []
     x = get_enemy_diamonds(tick.map.diamonds, my_team.units)
