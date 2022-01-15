@@ -46,7 +46,9 @@ class TickMap:
             or position.x >= self.get_map_size_x()
             or position.y >= self.get_map_size_y()
         ):
-            raise Exception("Position is out of map")
+            return False
+        else:
+            return True
 
     def get_raw_tile_value_at(self, position: Position) -> str:
         self.validate_tile_exists(position)
