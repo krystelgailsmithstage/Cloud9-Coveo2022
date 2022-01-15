@@ -5,6 +5,49 @@ from u_position import *
 zones = []
 
 
+def check_lineOfSight(enemy_position, unit, tick):
+        isInSight = -1
+        vine_position = unit.position
+        if enemy_position.y == unit.position.y:
+            if enemy_position.x - unit.position.x > 0:
+                # verify right
+                while vine_position != enemy_position:
+                    if not tick.map.validate_tile_exists(vine_position) or tick.map.get_tile_type_at(vine_position) == TileType.WALL or tick.map.get_tile_type_at(vine_position) == TileType.SPAWN:
+                        break
+                    else:
+                        vine_position = Position(vine_position.x + 1, vine_position.y)
+                if vine_position == enemy_position:
+                    isInSight = 0
+            else:
+                # verify left
+                while vine_position != enemy_position:
+                    if not tick.map.validate_tile_exists(vine_position) or tick.map.get_tile_type_at(vine_position) == TileType.WALL or tick.map.get_tile_type_at(vine_position) == TileType.SPAWN:
+                        break
+                    else:
+                        vine_position = Position(vine_position.x - 1, vine_position.y)
+                if vine_position == enemy_position:
+                    isInSight = 1
+        elif enemy_position.x == unit.position.x:
+            if enemy_position.y - unit.position.y > 0:
+                # verify down
+                while vine_position != enemy_position:
+                    if not tick.map.validate_tile_exists(vine_position) or tick.map.get_tile_type_at(vine_position) == TileType.WALL or tick.map.get_tile_type_at(vine_position) == TileType.SPAWN:
+                        break
+                    else:
+                        vine_position = Position(vine_position.x, vine_position.y + 1)
+                if vine_position == enemy_position:
+                    isInSight = 2
+            else:
+                # verify up
+                while vine_position != enemy_position:
+                    if not tick.map.validate_tile_exists(vine_position) or tick.map.get_tile_type_at(vine_position) == TileType.WALL or tick.map.get_tile_type_at(vine_position) == TileType.SPAWN:
+                        break
+                    else:
+                        vine_position = Position(vine_position.x, vine_position.y - 1)
+                if vine_position == enemy_position:
+                    isInSight = 3
+        return isInSight, enemy_position
+
 def get_next_action(tick: Tick, unit, all_zones):
     """
     The big papa decision maker
@@ -54,6 +97,13 @@ def get_next_action(tick: Tick, unit, all_zones):
                         return CommandType.ATTACK, enemy_position
                 # Walk towards the closest empty tile around the diamond
                 else:
+                    vine_array = []
+                    for enemy_diamond in get_enemy_diamonds_not_null(tick.map.diamonds, my_team.units):
+                        vine_array.append(check_lineOfSight(enemy_diamond.position, unit, tick));
+
+                    for vine_orientation, vine_position in vine_array:
+                        if vine_orientation > -1:
+                            return CommandType.VINE, vine_position
                     empty_tiles_around = get_empty_tiles(diamond.position, tick)
                     if len(empty_tiles_around) > 0:
                         return CommandType.MOVE, empty_tiles_around[0]
@@ -127,6 +177,18 @@ def get_next_action(tick: Tick, unit, all_zones):
     # Return a None command for this unit to make sure the code does not crash
     else:
         return CommandType.NONE, None
+
+
+def clear_unavailable_diamonds(tick: Tick, diamonds: List[Diamond], unit):
+def try_vine(unit, tick, my_team):
+    vine_array = []
+    x = get_enemy_diamonds(tick.map.diamonds, my_team.units)
+    for enemy_diamond in get_enemy_diamonds(tick.map.diamonds, my_team.units):
+        vine_array.append(check_lineOfSight(enemy_diamond.position, unit, tick));
+
+    for vine_orientation, vine_position  in vine_array:
+        if vine_orientation > -1:
+            return CommandType.VINE, vine_position
 
 
 def clear_unavailable_diamonds(tick: Tick, diamonds: List[Diamond], unit):

@@ -12,6 +12,9 @@ def get_enemy_diamonds(diamonds: List[Diamond], our_units):
     our_units_ids = [unit.id for unit in our_units]
     return [d for d in diamonds if d.ownerId not in our_units_ids]
 
+def get_enemy_diamonds_not_null(diamonds: List[Diamond], our_units):
+    our_units_ids = [unit.id for unit in our_units]
+    return [d for d in diamonds if d.ownerId is not None and d.ownerId not in our_units_ids]
 
 def get_all_diamonds_positions(diamonds: List[Diamond]):
     return [d.position for d in diamonds]
