@@ -9,6 +9,7 @@ from typing import List
 from bot import get_next_moves
 from bot_message import BotMessage, MessageType
 from game_message import Tick, Team
+from zone import get_zones
 
 
 async def run():
@@ -34,7 +35,9 @@ async def game_loop(websocket: websockets.WebSocketServerProtocol):
 
         game_message: Tick = Tick.from_dict(json.loads(message))
         # print(f"Playing tick {game_message.tick} of {game_message.totalTick}")
-
+        if game_message.tick == 0:
+            get_zones(game_message.map)
+            # print('map', game_message.map)
         my_team: Team = game_message.get_teams_by_id()[game_message.teamId]
 
         if my_team.errors:
