@@ -48,6 +48,7 @@ def check_lineOfSight(enemy_position, unit, tick):
                     isInSight = 3
         return isInSight, enemy_position
 
+
 def get_next_action(tick: Tick, unit, all_zones):
     """
     The big papa decision maker
@@ -98,16 +99,16 @@ def get_next_action(tick: Tick, unit, all_zones):
                 else:
                     vine_array = []
                     for enemy_diamond in get_enemy_diamonds_not_null(tick.map.diamonds, my_team.units):
-                        vine_array.append(check_lineOfSight(enemy_diamond.position, unit, tick));
+                        vine_array.append(check_lineOfSight(enemy_diamond.position, unit, tick))
 
                     for vine_orientation, vine_position in vine_array:
-                        if vine_orientation > -1:
+                        if vine_orientation > -1 and tick.map.get_tile_type_at(unit.position) != TileType.SPAWN:
                             return CommandType.VINE, vine_position
                     empty_tiles_around = get_empty_tiles(diamond.position, tick)
                     if len(empty_tiles_around) > 0:
                         return CommandType.MOVE, empty_tiles_around[0]
                     else:
-                        return CommandType.NONE, None
+                        return CommandType.MOVE, diamond.position
             # Else, just move to the diamond
             else:
                 return CommandType.MOVE, diamond.position
