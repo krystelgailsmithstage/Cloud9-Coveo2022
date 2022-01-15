@@ -152,6 +152,18 @@ def get_next_action(tick: Tick, unit, all_zones):
 
     # Second major use case is if the diamond does not have a diamond
     elif unit.hasDiamond:
+        vine_array = []
+
+        enemy_diamonds_not_null = get_enemy_diamonds_not_null(tick.map.diamonds, my_team.units)
+        enemies_positions = get_all_enemies_positions(tick, my_team)
+        enemies_without_diamond = [enemy for enemy in enemies_positions if enemy not in enemy_diamonds_not_null]
+        for enemy_without_diamond in filter(None, enemies_without_diamond):
+            vine_array.append(check_lineOfSight(enemy_without_diamond, unit, tick))
+
+        for vine_orientation, vine_position in vine_array:
+            if vine_orientation > -1:
+                return get_drop_action(unit, tick)
+
         closest_enemy = get_closest_enemy(tick, unit)
         if closest_enemy is not None:
             distance = abs(closest_enemy.x - unit.position.x) + abs(closest_enemy.y - unit.position.y)
