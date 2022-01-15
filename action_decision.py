@@ -61,8 +61,11 @@ def get_drop_action(unit: Unit, tick):
     ]
 
     for position in positions:
-        print(position)
+        # print(position)
         if tick.map.get_tile_type_at(position) == TileType.EMPTY:
             return CommandType.DROP, position
 
     return CommandType.DROP, unit.position
+
+#
+# def get_summon_action(unit: Unit, tick):
