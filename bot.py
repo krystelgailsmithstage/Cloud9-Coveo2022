@@ -3,7 +3,7 @@ from game_message import Tick, Position, Team, TickMap, TileType
 from game_command import CommandAction, CommandType
 from action_decision import get_next_action
 
-from spawn import get_spawn_borders
+from spawn import get_spawn_borders, get_closest_spawn_positions
 
 import random
 
@@ -27,7 +27,7 @@ class Bot:
             if not unit.hasSpawned:
                 actions.append(
                     CommandAction(
-                        action=CommandType.SPAWN, unitId=unit.id, target=self.get_random_spawn_position(tick.map)
+                        action=CommandType.SPAWN, unitId=unit.id, target=self.get_spawn_position(tick.map, actions)
                     )
                 )
             else:
@@ -39,7 +39,7 @@ class Bot:
         return actions
 
 
-    def get_random_spawn_position(self, tick_map: TickMap) -> Position:
+    def get_spawn_position(self, tick_map: TickMap, actions) -> Position:
         spawns: List[Position] = []
 
         for x in range(tick_map.get_map_size_x()):
@@ -49,6 +49,7 @@ class Bot:
                     spawns.append(position)
 
         spawnsBorders = get_spawn_borders(spawns, tick_map)
+        nextClosestPosition = get_closest_spawn_positions(spawnsBorders, tick_map, actions)[0][0]
 
+        return nextClosestPosition
 
-        return spawnsBorders[random.randint(0, len(spawnsBorders) - 1)]
