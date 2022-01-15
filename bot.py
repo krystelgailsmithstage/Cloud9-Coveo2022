@@ -29,7 +29,7 @@ class Bot:
                     )
                 )
             else:
-                next_action, next_position = get_next_action(tick, unit.id)
+                next_action, next_position = get_next_action(tick, unit, actions)
                 actions.append(
                     CommandAction(action=next_action, unitId=unit.id, target=next_position)
                 )
