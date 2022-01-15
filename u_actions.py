@@ -27,37 +27,65 @@ def get_next_action(tick: Tick, unit):
 
     # First major use case is if the diamond does not have a diamond
     if not unit.hasDiamond:
+        ordered_diamonds = get_diamonds_by_priority(tick, unit)
         unowned_diamonds = get_unowned_diamonds(tick.map.diamonds)
 
-        # Check if diamond is available and go for it if it is
-        if len(unowned_diamonds) > 0:
-            closest_diamond = get_closest_diamond(unit, unowned_diamonds)
-            return CommandType.MOVE, closest_diamond.position
+        for diamond in ordered_diamonds:
+            # If diamond is owned by our team, test with the next diamond in the priority list
+            if diamond.ownerId in [owner.id for owner in my_team.units]:
+                continue
 
-        # Else go in attack mode towards closest enemy with a diamond
-        else:
-            enemy_close, enemy_position = is_enemy_close(unit, tick)
-            # enemy_in_sight, enemy_grapple_position = is_enemy_lineofsight(unit, tick, my_team)
-            # If an enemy is already close, attack it
-            if enemy_close:
-                print(unit.hasDiamond, enemy_position)
-                if tick.map.get_tile_type_at(enemy_position) != TileType.SPAWN\
-                        and tick.map.get_tile_type_at(unit.position) != TileType.SPAWN:
-                    return CommandType.ATTACK, enemy_position
+            # Else if an enemy has it, go in attack mode towards this diamond (and enemy)
+            elif diamond.ownerId in [owner.id for owner in get_all_enemy_ids(tick, my_team)]:
+                # print(f"Unit {unit.id} ({unit.position.x}, {unit.position.y}) is targeting ane enemy diamond!")
+                enemy_close, enemy_position = is_enemy_close(unit, tick)
+                # If the enemy is close, attack it
+                if enemy_close:
+                    if tick.map.get_tile_type_at(enemy_position) != TileType.SPAWN\
+                            and tick.map.get_tile_type_at(unit.position) != TileType.SPAWN:
+                        return CommandType.ATTACK, enemy_position
+                # Walk towards the closest empty tile around the diamond
                 else:
-                    return CommandType.NONE, None
-            # TODO: If enemy is in line of sight, grapple
-            # if enemy_in_sight:
-            #     return CommandType.VINE, enemy_grapple_position
-            # Else move to closest enemy holding diamond
+                    empty_tiles_around = get_empty_tiles(diamond.position, tick)
+                    if len(empty_tiles_around) > 0:
+                        return CommandType.MOVE, empty_tiles_around[0]
+                    else:
+                        return CommandType.NONE, None
+            # Else, just move to the diamond
             else:
-                enemy_diamonds = get_enemy_diamonds(tick.map.diamonds, my_team.units)
-                closest_enemy_diamond = get_closest_diamond(unit, enemy_diamonds)
-                empty_tiles_around = get_empty_tiles(closest_enemy_diamond.position, tick)
-                if len(empty_tiles_around) > 0:
-                    return CommandType.MOVE, empty_tiles_around[0]
-                else:
-                    return CommandType.NONE, None
+                return CommandType.MOVE, diamond.position
+        else:
+            return CommandType.MOVE, diamond.position
+
+        # # Check if diamond is available and go for it if it is
+        # if len(unowned_diamonds) > 0:
+        #     closest_diamond = get_closest_diamond(unit, unowned_diamonds)
+        #     return CommandType.MOVE, closest_diamond.position
+        #
+        # # Else go in attack mode towards closest enemy with a diamond
+        # else:
+        #     enemy_close, enemy_position = is_enemy_close(unit, tick)
+        #     # enemy_in_sight, enemy_grapple_position = is_enemy_lineofsight(unit, tick, my_team)
+        #     # If an enemy is already close, attack it
+        #     if enemy_close:
+        #         print(unit.hasDiamond, enemy_position)
+        #         if tick.map.get_tile_type_at(enemy_position) != TileType.SPAWN\
+        #                 and tick.map.get_tile_type_at(unit.position) != TileType.SPAWN:
+        #             return CommandType.ATTACK, enemy_position
+        #         else:
+        #             return CommandType.NONE, None
+        #     # TODO: If enemy is in line of sight, grapple
+        #     # if enemy_in_sight:
+        #     #     return CommandType.VINE, enemy_grapple_position
+        #     # Else move to closest enemy holding diamond
+        #     else:
+        #         enemy_diamonds = get_enemy_diamonds(tick.map.diamonds, my_team.units)
+        #         closest_enemy_diamond = get_closest_diamond(unit, enemy_diamonds)
+        #         empty_tiles_around = get_empty_tiles(closest_enemy_diamond.position, tick)
+        #         if len(empty_tiles_around) > 0:
+        #             return CommandType.MOVE, empty_tiles_around[0]
+        #         else:
+        #             return CommandType.NONE, None
 
     # Second major use case is if the diamond does not have a diamond
     elif unit.hasDiamond:
@@ -67,21 +95,20 @@ def get_next_action(tick: Tick, unit):
 
             # If the unit is kind of far enoff, we summon
             diamond_lvl = get_summon_level_for_unit(unit, tick.map)
-            if distance > 2 + diamond_lvl + 1 and diamond_lvl < 5:
+            # print(f"Unit {unit.id} ({unit.position.x}, {unit.position.y}) is verifying if it should summon")
+            if distance > (3 + diamond_lvl) and diamond_lvl < 5:
                 return CommandType.SUMMON, unit.position
 
             # If the unit is too close from enemy units, move away
             else:
-                return CommandType.MOVE, escape_from_enemy_action(tick, unit, my_team)
+                return CommandType.MOVE, escape_from_enemy_action(tick, unit)
         # If the unit is too close from enemy units, move away
         else:
-            return CommandType.MOVE, escape_from_enemy_action(tick, unit, my_team)
+            return CommandType.MOVE, escape_from_enemy_action(tick, unit)
 
     # Return a None command for this unit to make sure the code does not crash
     else:
         return CommandType.NONE, None
-
-    # return command_type_to_return, position_to_return
 
 
 def clear_unavailable_diamonds(tick: Tick, diamonds: List[Diamond]):
@@ -92,27 +119,62 @@ def clear_unavailable_diamonds(tick: Tick, diamonds: List[Diamond]):
             diamonds.remove(di)
 
 
-def escape_from_enemy_action(tick, unit, my_team):
+def escape_from_enemy_action(tick, unit):
     closest_enemy_position = get_closest_enemy(tick, unit)
     if closest_enemy_position is not None:
         if abs(unit.position.x - closest_enemy_position.x) < abs(unit.position.y - closest_enemy_position.y):
-            # Move Horizontally
-            if unit.position.x - closest_enemy_position.x < 0:
-                # Move Left
-                position = Position(unit.position.x - 1, unit.position.y)
-            else:
-                # Move Right
-                position = Position(unit.position.x + 1, unit.position.y)
+            moved_away, position = try_move_x(tick, unit, closest_enemy_position)
+            if not moved_away:
+                moved_away, position = try_move_y(tick, unit, closest_enemy_position)
         else:
-            # Move Vertically
-            if unit.position.y - closest_enemy_position.y < 0:
-                # Move Up
-                position = Position(unit.position.x, unit.position.y - 1)
-            else:
-                # Move Down
-                position = Position(unit.position.x, unit.position.y + 1)
+            moved_away, position = try_move_y(tick, unit, closest_enemy_position)
+            if not moved_away:
+                moved_away, position = try_move_x(tick, unit, closest_enemy_position)
         return position
     return unit.position
+
+
+def try_move_x(tick, unit, closest_enemy_position):
+    # Move Horizontally
+    moved_away = False
+
+    if unit.position.x - closest_enemy_position.x <= 0:
+        # Move Left
+        position = Position(unit.position.x - 1, unit.position.y)
+        surrounding_empty_tiles = get_empty_tiles(position, tick)
+        if position in get_empty_tiles(position, tick):
+            moved_away = True
+    else:
+        # Move Right
+        position = Position(unit.position.x + 1, unit.position.y)
+        if position in get_empty_tiles(position, tick):
+            moved_away = True
+    return moved_away, position
+
+
+def try_move_y(tick, unit, closest_enemy_position):
+    # Move Vertically
+    moved_away = False
+    if unit.position.y - closest_enemy_position.y <= 0:
+        # Move Up
+        position = Position(unit.position.x, unit.position.y - 1)
+        if validate_position_availability(tick, position):
+            moved_away = True
+    else:
+        # Move Down
+        position = Position(unit.position.x, unit.position.y + 1)
+        if validate_position_availability(tick, position):
+            moved_away = True
+    return moved_away, position
+
+
+def get_empty_non_player_tiles(position: Position, tick: Tick):
+    empty_surroundings = get_empty_tiles(position, tick)
+    empty_surroundings_copy = empty_surroundings.copy()
+    for tile in empty_surroundings_copy:
+        if tile in get_all_units_positions(tick):
+            empty_surroundings.remove(tile)
+    return empty_surroundings
 
 
 def get_empty_tiles(position: Position, tick: Tick):
@@ -254,3 +316,13 @@ def get_closest_enemy(tick: Tick, unit: Unit):
         return closest_enemy
     else:
         return None
+
+
+def get_all_enemy_ids(tick, my_team):
+    all_enemy_units = []
+    for team in tick.teams:
+        # only if its not our team so we dont kill ourselves lol
+        if team.id != my_team.id:
+            all_enemy_units.extend(team.units)
+
+    return all_enemy_units

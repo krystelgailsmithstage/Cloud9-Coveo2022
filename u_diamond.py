@@ -17,14 +17,19 @@ def get_all_diamonds_positions(diamonds: List[Diamond]):
     return [d.position for d in diamonds]
 
 
+def distance_between_unit_and_diamond(diamond, unit):
+    distance_x = abs(diamond.position.x - unit.position.x)
+    distance_y = abs(diamond.position.y - unit.position.y)
+    distance = distance_x + distance_y
+    return distance
+
+
 def get_closest_diamond(unit: Unit, diamonds: List[Diamond]):
     shortest_distance = None
     closest_diamond = None
 
     for diamond in filter(None, diamonds):
-        distance_x = abs(diamond.position.x - unit.position.x)
-        distance_y = abs(diamond.position.y - unit.position.y)
-        distance = distance_x + distance_y
+        distance = distance_between_unit_and_diamond(diamond, unit)
         if shortest_distance is None or distance < shortest_distance:
             shortest_distance = distance
             closest_diamond = diamond
@@ -43,5 +48,13 @@ def get_targeted_diamonds(actions, diamonds):
     return targeted_diamonds
 
 
-# def best_diamond_quality(tick: Tick, unit: Unit):
-#     for d in tick.map.diamonds:
+def get_diamonds_by_priority(tick: Tick, unit: Unit):
+    sorted_diamonds = []
+    for d in tick.map.diamonds:
+        dist = distance_between_unit_and_diamond(d, unit)
+        priority = 0.3 * d.points + 50 / dist
+        sorted_diamonds.append((d, priority))
+
+    sorted_diamonds.sort(key=lambda x: x[1], reverse=True)
+    diamond_list = [d[0] for d in sorted_diamonds]
+    return diamond_list
