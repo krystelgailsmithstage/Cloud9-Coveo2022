@@ -5,7 +5,6 @@ from game_command import CommandAction, CommandType
 import random
 
 
-
 def get_spawn_borders(spawnPositions: List[Position], tick_map: TickMap) -> List[Position]:
     spawnsBorder: List[Position] = []
 
@@ -14,7 +13,6 @@ def get_spawn_borders(spawnPositions: List[Position], tick_map: TickMap) -> List
             spawnsBorder.append(position)
 
     return spawnsBorder
-
 
 
 def has_around(tick_map: TickMap, position: Position, tileType: TileType)  -> bool:
