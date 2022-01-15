@@ -3,6 +3,7 @@ from game_command import CommandAction, CommandType
 
 from diamond_management import get_unowned_diamonds, get_closest_diamond, get_enemy_diamonds
 
+from spawn import get_spawn_borders
 
 def get_next_action(tick: Tick, unit, actions):
     my_team: Team = tick.get_teams_by_id()[tick.teamId]
@@ -89,6 +90,31 @@ def get_empty_tiles(position: Position, tick: Tick):
                 and pos not in get_all_units_positions(tick):
             empty_position.append(pos)
     return empty_position
+
+
+def get_closest_spawn(diamond, spawns):
+    closest_spawn = None
+    shortest_distance = None
+
+    for spawn in spawns:
+        distance_x = abs(diamond.position.x - spawn.x)
+        distance_y = abs(diamond.position.y - spawn.y)
+        distance = distance_x + distance_y
+        if shortest_distance is None or distance < shortest_distance:
+            shortest_distance = distance
+            closest_spawn = spawn
+
+    return closest_spawn, distance
+
+def get_diamond_spawn_pairs(diamonds, spawns):
+    pair = []
+    for diamond in diamonds:
+        pair.append(get_closest_spawn(diamond, spawns))
+
+    pair.sort(key=lambda x:x[1])
+
+    return pair
+
 
 
 def get_drop_action(unit: Unit, tick):

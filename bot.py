@@ -1,7 +1,7 @@
 from typing import List
 from game_message import Tick, Position, Team, TickMap, TileType
 from game_command import CommandAction, CommandType
-from action_decision import get_next_action
+from action_decision import get_next_action, get_diamond_spawn_pairs
 
 from spawn import get_spawn_borders
 
@@ -22,14 +22,15 @@ class Bot:
         my_team: Team = tick.get_teams_by_id()[tick.teamId]
 
         actions: List = []
-
+        index = 0
         for unit in my_team.units:
             if not unit.hasSpawned:
                 actions.append(
                     CommandAction(
-                        action=CommandType.SPAWN, unitId=unit.id, target=self.get_random_spawn_position(tick.map)
+                        action=CommandType.SPAWN, unitId=unit.id, target=self.get_random_spawn_position(tick.map, index % len(tick.map.diamonds))
                     )
                 )
+                index = index + 1
             else:
                 next_action, next_position = get_next_action(tick, unit, actions)
                 actions.append(
@@ -38,8 +39,7 @@ class Bot:
 
         return actions
 
-
-    def get_random_spawn_position(self, tick_map: TickMap) -> Position:
+    def get_random_spawn_position(self, tick_map: TickMap, index) -> Position:
         spawns: List[Position] = []
 
         for x in range(tick_map.get_map_size_x()):
@@ -49,6 +49,6 @@ class Bot:
                     spawns.append(position)
 
         spawnsBorders = get_spawn_borders(spawns, tick_map)
-
-
-        return spawnsBorders[random.randint(0, len(spawnsBorders) - 1)]
+        diamond_spawn_pairs = get_diamond_spawn_pairs(tick_map.diamonds, spawnsBorders)
+        diamond_spawn_pairs.sort(key=lambda x: x[1])
+        return diamond_spawn_pairs[index][0]
