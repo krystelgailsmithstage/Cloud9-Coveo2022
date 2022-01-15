@@ -111,6 +111,7 @@ class Team:
     units: List[Unit]
     errors: List[str]
 
+
 @dataclass_json
 @dataclass
 class GameConfig:
