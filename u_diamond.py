@@ -50,9 +50,10 @@ def get_targeted_diamonds(actions, diamonds):
 
 def get_diamonds_by_priority(tick: Tick, unit: Unit):
     sorted_diamonds = []
+    # print(tick.map.diamonds)
     for d in tick.map.diamonds:
         dist = distance_between_unit_and_diamond(d, unit)
-        priority = 0.3 * d.points + 50 / dist
+        priority = 0.3 * d.points + 100 / dist
         sorted_diamonds.append((d, priority))
 
     sorted_diamonds.sort(key=lambda x: x[1], reverse=True)
