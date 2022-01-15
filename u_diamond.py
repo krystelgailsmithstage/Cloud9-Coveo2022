@@ -1,6 +1,6 @@
 from typing import List
 
-from game_message import Unit, Diamond
+from game_message import Unit, Diamond, Tick
 from game_command import CommandType
 
 
@@ -11,6 +11,10 @@ def get_unowned_diamonds(diamonds: List[Diamond]):
 def get_enemy_diamonds(diamonds: List[Diamond], our_units):
     our_units_ids = [unit.id for unit in our_units]
     return [d for d in diamonds if d.ownerId not in our_units_ids]
+
+
+def get_all_diamonds_positions(diamonds: List[Diamond]):
+    return [d.position for d in diamonds]
 
 
 def get_closest_diamond(unit: Unit, diamonds: List[Diamond]):
@@ -37,3 +41,7 @@ def get_targeted_diamonds(actions, diamonds):
                     targeted_diamonds.append(diamond)
 
     return targeted_diamonds
+
+
+# def best_diamond_quality(tick: Tick, unit: Unit):
+#     for d in tick.map.diamonds:

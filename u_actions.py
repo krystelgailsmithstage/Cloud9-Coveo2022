@@ -15,9 +15,15 @@ def get_next_action(tick: Tick, unit):
     """
     my_team: Team = tick.get_teams_by_id()[tick.teamId]
 
+    clear_unavailable_diamonds(tick, tick.map.diamonds)
+
+    command_type_to_return = CommandType.NONE
+    position_to_return = None
+
     # Make sure to drop the owned diamonds on the last tick at all times
     if tick.tick == tick.totalTick - 1 and unit.hasDiamond:
         return get_drop_action(unit, tick)
+        # return command_type_to_return, position_to_return
 
     # First major use case is if the diamond does not have a diamond
     if not unit.hasDiamond:
@@ -74,6 +80,16 @@ def get_next_action(tick: Tick, unit):
     # Return a None command for this unit to make sure the code does not crash
     else:
         return CommandType.NONE, None
+
+    # return command_type_to_return, position_to_return
+
+
+def clear_unavailable_diamonds(tick: Tick, diamonds: List[Diamond]):
+    diamonds_copy = diamonds.copy()
+    for di in diamonds_copy:
+        if not validate_position_availability(tick, di.position):
+            print(f"REMOVING diamond at position {di.position} from available diamonds!")
+            diamonds.remove(di)
 
 
 def escape_from_enemy_action(tick, unit, my_team):
@@ -204,9 +220,9 @@ def is_enemy_lineofsight(unit: Unit, tick: Tick, my_team):
     i = 1
     y_negative = []
     while tick.map.validate_tile_exists(pos) and \
-            (not tick.map.get_tile_type_at(pos) == TileType.WALL\
-            or not tick.map.get_tile_type_at(pos) == TileType.SPAWN):
-        pos = Position(x= unit.position.x + i, y= unit.position.y - i)
+            (not tick.map.get_tile_type_at(pos) == TileType.WALL \
+             or not tick.map.get_tile_type_at(pos) == TileType.SPAWN):
+        pos = Position(x=unit.position.x + i, y=unit.position.y - i)
         y_negative.append(pos)
         i += 1
 
