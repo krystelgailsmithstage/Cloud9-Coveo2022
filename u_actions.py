@@ -5,6 +5,50 @@ from u_position import *
 zones = []
 
 
+def check_lineOfSight(enemy_position, unit, tick):
+        isInSight = -1
+        vine_position = unit.position
+        if enemy_position.y == unit.position.y:
+            if enemy_position.x - unit.position.x > 0:
+                # verify right
+                while vine_position != enemy_position:
+                    if not tick.map.validate_tile_exists(vine_position) or tick.map.get_tile_type_at(vine_position) == TileType.WALL or tick.map.get_tile_type_at(vine_position) == TileType.SPAWN:
+                        break
+                    else:
+                        vine_position = Position(vine_position.x + 1, vine_position.y)
+                if vine_position == enemy_position:
+                    isInSight = 0
+            else:
+                # verify left
+                while vine_position != enemy_position:
+                    if not tick.map.validate_tile_exists(vine_position) or tick.map.get_tile_type_at(vine_position) == TileType.WALL or tick.map.get_tile_type_at(vine_position) == TileType.SPAWN:
+                        break
+                    else:
+                        vine_position = Position(vine_position.x - 1, vine_position.y)
+                if vine_position == enemy_position:
+                    isInSight = 1
+        elif enemy_position.x == unit.position.x:
+            if enemy_position.y - unit.position.y > 0:
+                # verify down
+                while vine_position != enemy_position:
+                    if not tick.map.validate_tile_exists(vine_position) or tick.map.get_tile_type_at(vine_position) == TileType.WALL or tick.map.get_tile_type_at(vine_position) == TileType.SPAWN:
+                        break
+                    else:
+                        vine_position = Position(vine_position.x, vine_position.y + 1)
+                if vine_position == enemy_position:
+                    isInSight = 2
+            else:
+                # verify up
+                while vine_position != enemy_position:
+                    if not tick.map.validate_tile_exists(vine_position) or tick.map.get_tile_type_at(vine_position) == TileType.WALL or tick.map.get_tile_type_at(vine_position) == TileType.SPAWN:
+                        break
+                    else:
+                        vine_position = Position(vine_position.x, vine_position.y - 1)
+                if vine_position == enemy_position:
+                    isInSight = 3
+        return isInSight, enemy_position
+
+
 def get_next_action(tick: Tick, unit, all_zones):
     """
     The big papa decision maker
@@ -23,6 +67,9 @@ def get_next_action(tick: Tick, unit, all_zones):
 
     command_type_to_return = CommandType.NONE
     position_to_return = None
+
+    # if tick.map.get_tile_type_at(unit.position) == TileType.SPAWN:
+    #     print(f"UNIT {unit.id} is in spawn at ({unit.position.x}, {unit.position.y})")
 
     # Make sure to drop the owned diamonds on the last tick at all times
     if tick.tick == tick.totalTick - 1 and unit.hasDiamond:
