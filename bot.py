@@ -2,8 +2,8 @@ from typing import List
 from game_message import Tick, Team
 from game_command import CommandAction, CommandType
 
-from action_decision import get_next_action
-from spawn import get_spawn_position
+from u_actions import get_next_action
+from u_spawn import get_spawn_position
 
 
 def get_next_moves(tick: Tick) -> List:
@@ -28,7 +28,7 @@ def get_next_moves(tick: Tick) -> List:
             )
             index = index + 1
         else:
-            next_action, next_position = get_next_action(tick, unit, actions)
+            next_action, next_position = get_next_action(tick, unit)
             actions.append(
                 CommandAction(
                     action=next_action,

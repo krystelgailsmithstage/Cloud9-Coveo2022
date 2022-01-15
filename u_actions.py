@@ -1,14 +1,25 @@
 from game_message import Tick, Position, Team, TickMap, TileType, Unit
-from game_command import CommandAction, CommandType
 
-from diamond_management import get_unowned_diamonds, get_closest_diamond, get_enemy_diamonds
-
-from spawn import get_spawn_borders
+from u_diamond import *
+from u_position import *
 
 
-def get_next_action(tick: Tick, unit, actions):
+def get_next_action(tick: Tick, unit):
+    """
+    The big papa decision maker
+
+    :param tick:
+    :param unit:
+
+    :return: The action to be taken for the given Unit
+    """
     my_team: Team = tick.get_teams_by_id()[tick.teamId]
 
+    # Make sure to drop the owned diamonds on the last tick at all times
+    if tick.tick == tick.totalTick - 1 and unit.hasDiamond:
+        return get_drop_action(unit, tick)
+
+    # First major use case is if the diamond does not have a diamond
     if not unit.hasDiamond:
         unowned_diamonds = get_unowned_diamonds(tick.map.diamonds)
 
@@ -41,9 +52,8 @@ def get_next_action(tick: Tick, unit, actions):
                     return CommandType.MOVE, empty_tiles_around[0]
                 else:
                     return CommandType.NONE, None
-    elif tick.tick == tick.totalTick - 1 and unit.hasDiamond:
-        return get_drop_action(unit, tick)
 
+    # Second major use case is if the diamond does not have a diamond
     elif unit.hasDiamond:
         closest_enemy = get_closest_enemy(tick, unit)
         if closest_enemy is not None:
@@ -56,17 +66,17 @@ def get_next_action(tick: Tick, unit, actions):
 
             # If the unit is too close from enemy units, move away
             else:
-                return CommandType.MOVE, find_escape(tick, unit, my_team)
+                return CommandType.MOVE, escape_from_enemy_action(tick, unit, my_team)
         # If the unit is too close from enemy units, move away
         else:
-            return CommandType.MOVE, find_escape(tick, unit, my_team)
-    elif tick.tick == tick.totalTick - 1 and unit.hasDiamond:
-        return get_drop_action(unit, tick)
+            return CommandType.MOVE, escape_from_enemy_action(tick, unit, my_team)
+
+    # Return a None command for this unit to make sure the code does not crash
     else:
         return CommandType.NONE, None
 
 
-def find_escape(tick, unit, my_team):
+def escape_from_enemy_action(tick, unit, my_team):
     closest_enemy_position = get_closest_enemy(tick, unit)
     if closest_enemy_position is not None:
         if abs(unit.position.x - closest_enemy_position.x) < abs(unit.position.y - closest_enemy_position.y):
@@ -87,23 +97,6 @@ def find_escape(tick, unit, my_team):
                 position = Position(unit.position.x, unit.position.y + 1)
         return position
     return unit.position
-
-
-def get_all_units_positions(tick: Tick):
-    all_positions = []
-    for team in tick.teams:
-        all_positions.extend([unit.position for unit in team.units])
-
-    return all_positions
-
-
-def get_all_enemies_positions(tick: Tick, my_team):
-    all_positions = []
-    for team in tick.teams:
-        if not team.id == my_team.id:
-            all_positions.extend([unit.position for unit in team.units])
-
-    return all_positions
 
 
 def get_empty_tiles(position: Position, tick: Tick):
@@ -245,5 +238,3 @@ def get_closest_enemy(tick: Tick, unit: Unit):
         return closest_enemy
     else:
         return None
-
-# def get_runaway_position(unit_position: Position, enemy_position: Position, tick_map: TickMap):
